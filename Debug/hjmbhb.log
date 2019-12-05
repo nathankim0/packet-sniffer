@@ -1,0 +1,4 @@
+﻿  s.c
+C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\s.c(1,1): warning C4005: 'WIN32': 매크로 재정의
+C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\s.c : message : 'WIN32'의 이전 정의를 참조하십시오.
+  hjmbhb.vcxproj -> C:\Users\jinyeob\source\repos\hjmbhb\Debug\hjmbhb.exe
