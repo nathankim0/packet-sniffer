@@ -19,10 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="s.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mypcap.h" />
+    <ClCompile Include="packet_capture.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

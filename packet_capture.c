@@ -45,10 +45,29 @@ typedef struct IPHeader
 	ip SenderAddress;
 	ip DestinationAddress;
 	u_int Option_Padding;
+}IPHeader;
 
+typedef struct TCPHeader
+{
 	unsigned short source_port;
 	unsigned short dest_port;
-}IPHeader;
+	unsigned int sequence;
+	unsigned int acknowledge;
+	unsigned char ns : 1;
+	unsigned char reserved_part1 : 3;
+	unsigned char data_offset : 4;
+	unsigned char fin : 1;
+	unsigned char syn : 1;
+	unsigned char rst : 1;
+	unsigned char psh : 1;
+	unsigned char ack : 1;
+	unsigned char urg : 1;
+	unsigned char ecn : 1;
+	unsigned char cwr : 1;
+	unsigned short window;
+	unsigned short checksum;
+	unsigned short urgent_pointer;
+}TCPHeader;
 
 
 typedef struct CheckSummer
@@ -185,13 +204,10 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	printf("├  Src MAC : %02x-%02x-%02x-%02x-%02x-%02x\n", EH->src[0], EH->src[1], EH->src[2], EH->src[3], EH->src[4], EH->src[5]);//송신자 MAC
 	printf("├  Dst MAC : %02x-%02x-%02x-%02x-%02x-%02x\n", EH->des[0], EH->des[1], EH->des[2], EH->des[3], EH->des[4], EH->des[5]);//수신자 MAC
 	IPHeader* IH = (struct IPHeader*)(data + 14); //제일 처음 14byte는 이더넷 헤더(Layer 2) 그 위에는 IP헤더(20byte), 그 위에는 TCP 헤더...
+	TCPHeader* TCP = (struct TCPHeader*)(data + 34); // TCP 헤더 
 	CheckSummer* CS = (struct CheckSummer*)(data + 14); //체크섬을 저장 할 변수
 	//물리 계층은 01010101이므로 데이터 자르기는 안해도 됨.
 	//헤더가 붙는 Layer2인 데이터링크 계층부터 자르면 됨.
-
-	printf("Src Port Num : %d\n", ntohs(IH->source_port));
-	printf("Dest Port Num : %d\n", ntohs(IH->dest_port));
-
 
 	if (type == IPHEADER)
 	{
@@ -212,6 +228,8 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	//	printf("서비스 종류 : %04x\n", IH->TypeOfService);
 		printf("전체 크기 : %d\n", ntohs(IH->HeaderLength));//2 bytes 이상 부터는 무조건 뒤집어야 하므로 ntohs함수를 써서 뒤집는다.
 		printf("패킷 ID : %d\n", ntohs(IH->ID));
+		printf("Sequence Number : %u\n", ntohl(TCP->sequence));
+		printf("Acknowledge Number : %u\n", ntohl(TCP->acknowledge));
 	//	if (0x4000 == ((ntohs(IH->FlagOffset)) & 0x4000))
 	//		printf("[1] 단편화 되지 않은 패킷입니다.\n");
 	//	else
@@ -233,6 +251,8 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 			break;
 		case IPPROTO_TCP:
 			printf("TCP\n");
+			printf("SCR PORT : %d\n", ntohs(TCP->source_port));
+			printf("DEST PORT : %d\n", ntohs(TCP->dest_port));
 			break;
 		case IPPROTO_PUP:
 			printf("PUP\n");
