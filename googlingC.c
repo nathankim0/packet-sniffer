@@ -97,7 +97,7 @@ int main(void)
         /* Free the device list */
         pcap_freealldevs(alldevs);
        return -1;
-    }
+    } 
 	else
 	{
 		iDataLink = pcap_datalink(pDes);

@@ -115,6 +115,49 @@ typedef struct CheckSummer
 	u_short part9;
 
 }CheckSummer;
+void PrintHexAscii(const unsigned char* buffer, unsigned int Psize)
+{
+	int iCnt, iCnt2;
+
+	printf("addr   ");
+	for (iCnt2 = 0; iCnt2 < 16; ++iCnt2)
+	{
+		printf("%02X ", iCnt2);
+	}
+	printf("   ");
+	for (iCnt2 = 0; iCnt2 < 16; ++iCnt2)
+	{
+		printf("%X", iCnt2);
+	}
+	printf("\n");
+	printf("==========================================================================\n");
+	for (iCnt = 0; iCnt < Psize + (16 - (Psize % 16)); ++iCnt)
+	{
+		if (0 == (iCnt % 16))
+		{
+			printf("0x%02X0  ", iCnt / 16);
+		}
+		printf("%02X ", *(buffer + iCnt));
+		if (15 == iCnt % 16)
+		{
+			printf("   ");
+			for (iCnt2 = iCnt - 16; iCnt2 < iCnt; ++iCnt2)
+			{
+				if ((*(buffer + iCnt2) < 33) || (*(buffer + iCnt2) > 127))
+				{
+					printf(".");
+				}
+				else
+				{
+					printf("%c", *(buffer + iCnt2));
+				}
+			}
+			printf("\n");
+		}
+	}
+}
+
+pcap_t* pickedDev; //사용할 디바이스를 저장하는 변수
 
 void main()
 {
@@ -123,7 +166,6 @@ void main()
 	char errorMSG[256]; //에러 메시지를 담을 변수 생성
 	char counter = 0;
 
-	pcap_t* pickedDev; //사용할 디바이스를 저장하는 변수
 
 					   //1. 장치 검색 (찾아낸 디바이스를 LinkedList로 묶음)
 	if ((pcap_findalldevs(&allDevice, errorMSG)) == -1)//변수 생성시에는 1 포인터지만, pcap_findallDevice에 쓰는건 더블 포인트이므로 주소로 주어야 함.
@@ -213,32 +255,32 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	{
 		int partSum = ntohs(CS->part1) + ntohs(CS->part2) + ntohs(CS->part3) + ntohs(CS->part4) + ntohs(CS->part5) + ntohs(CS->part6) + ntohs(CS->part7) + ntohs(CS->part8) + ntohs(CS->part9);
 		u_short Bit = partSum >> 16;
-	//	printf("파트 합 : %08x\n", partSum);
-	//	printf("4칸 이동 : %08x\n", Bit);
+		//	printf("파트 합 : %08x\n", partSum);
+		//	printf("4칸 이동 : %08x\n", Bit);
 		partSum = partSum - (Bit * 65536);
-	//	printf("넘긴것 더한 파트 합 : %04x\n", partSum + Bit);
-	//	printf("보수 취하기 : %04x\n", (u_short)~(partSum + Bit));
-	//	printf("체크섬 : %04x\n", ntohs(CS->checksum));
-	//	if (ntohs(CS->checksum) == (u_short)~(partSum + Bit))
-	//		printf("손상되지 않은 정상 패킷입니다.\n");
-	//	else
-	//		printf("손상된 패킷입니다. 재 전송 요청을 해야 합니다.\n");
+		//	printf("넘긴것 더한 파트 합 : %04x\n", partSum + Bit);
+		//	printf("보수 취하기 : %04x\n", (u_short)~(partSum + Bit));
+		//	printf("체크섬 : %04x\n", ntohs(CS->checksum));
+		//	if (ntohs(CS->checksum) == (u_short)~(partSum + Bit))
+		//		printf("손상되지 않은 정상 패킷입니다.\n");
+		//	else
+		//		printf("손상된 패킷입니다. 재 전송 요청을 해야 합니다.\n");
 		printf("버전 : IPv%d\n", IH->Version);
 		printf("헤더 길이 : %d\n", (IH->HeaderLength) * 4);
-	//	printf("서비스 종류 : %04x\n", IH->TypeOfService);
+		//	printf("서비스 종류 : %04x\n", IH->TypeOfService);
 		printf("전체 크기 : %d\n", ntohs(IH->HeaderLength));//2 bytes 이상 부터는 무조건 뒤집어야 하므로 ntohs함수를 써서 뒤집는다.
 		printf("패킷 ID : %d\n", ntohs(IH->ID));
 		printf("Sequence Number : %u\n", ntohl(TCP->sequence));
 		printf("Acknowledge Number : %u\n", ntohl(TCP->acknowledge));
-	//	if (0x4000 == ((ntohs(IH->FlagOffset)) & 0x4000))
-	//		printf("[1] 단편화 되지 않은 패킷입니다.\n");
-	//	else
-	//		printf("[0] 정상 단편화된 패킷\n");
-	//	if (0x2000 == ((ntohs(IH->FlagOffset)) & 0x2000))
-	//		printf("[1] 단편화된 패킷이 더 있습니다.\n");
-	//	else
-	//		printf("[0] 마지막 패킷입니다.\n");
-	//	printf("프래그먼트 오프셋 : %d[byte]\n", (0x1FFF & ntohs(IH->FlagOffset) * 8));
+		//	if (0x4000 == ((ntohs(IH->FlagOffset)) & 0x4000))
+		//		printf("[1] 단편화 되지 않은 패킷입니다.\n");
+		//	else
+		//		printf("[0] 정상 단편화된 패킷\n");
+		//	if (0x2000 == ((ntohs(IH->FlagOffset)) & 0x2000))
+		//		printf("[1] 단편화된 패킷이 더 있습니다.\n");
+		//	else
+		//		printf("[0] 마지막 패킷입니다.\n");
+		//	printf("프래그먼트 오프셋 : %d[byte]\n", (0x1FFF & ntohs(IH->FlagOffset) * 8));
 		printf("TTL : %d\n", IH->TimeToLive);
 		printf("프로토콜 : "/*, IH->Protocol*/);
 		switch (IH->Protocol)
@@ -275,10 +317,10 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 		printf("체크섬 : %04x\n", ntohs(IH->checksum));//예) 0x145F
 		printf("출발 IP 주소 : %d.%d.%d.%d\n", IH->SenderAddress.ip1, IH->SenderAddress.ip2, IH->SenderAddress.ip3, IH->SenderAddress.ip4);
 		printf("도착 IP 주소 : %d.%d.%d.%d\n", IH->DestinationAddress.ip1, IH->DestinationAddress.ip2, IH->DestinationAddress.ip3, IH->DestinationAddress.ip4);
-	//	printf("옵션/패딩 : %d\n", IH->Option_Padding);
-	//	printf("├Protocol : IP\n");
+		//	printf("옵션/패딩 : %d\n", IH->Option_Padding);
+		//	printf("├Protocol : IP\n");
 
-		
+
 	}
 	else if (type == ARPHEADER)
 	{
@@ -286,5 +328,22 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	}
 	else if (type == RARPHEADER)
 		printf("├Protocol : RARP\n");
-	printf("└─────────────────────────\n");
+
+	printf("\n패킷 아스키\n");
+	printf("\n───────────────────────────────────────────────────────────────────────────\n");
+
+	const u_char* ucData;
+	do
+	{
+		ucData = pcap_next(pickedDev, h);
+
+		if (300 > h->caplen)
+		{
+			continue;
+		}
+
+		PrintHexAscii(data, h->caplen);
+	} while (h->caplen < 1500);
+
+	printf("───────────────────────────────────────────────────────────────────────────\n");
 }

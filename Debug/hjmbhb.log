@@ -1,4 +1,5 @@
-﻿  packet_capture.c
-C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\packet_capture.c(1,1): warning C4005: 'WIN32': 매크로 재정의
-C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\packet_capture.c : message : 'WIN32'의 이전 정의를 참조하십시오.
+﻿  상현씨.c
+C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\상현씨.c(1,1): warning C4005: 'WIN32': 매크로 재정의
+C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\상현씨.c : message : 'WIN32'의 이전 정의를 참조하십시오.
+C:\Users\jinyeob\source\repos\hjmbhb\hjmbhb\상현씨.c(241,22): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
   hjmbhb.vcxproj -> C:\Users\jinyeob\source\repos\hjmbhb\Debug\hjmbhb.exe
