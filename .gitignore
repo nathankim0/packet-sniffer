@@ -4,3 +4,6 @@
 *.idb
 *.obj
 *.log
+*.filters
+*.user
+Debug/
