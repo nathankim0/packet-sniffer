@@ -3,14 +3,14 @@
 기본기능
 --
 Application Layer
-* HTTP, DNS, P2P 각각을 구분하여 필터링 제공
+* HTTP, P2P, DNS
 
 Transport Layer(TCP / UDP)
-* Source Port, Destination Port: 포트번호 제공<br>
-* TCP : Sequence number, Acknowledgment number 제공
+* Source Port, Destination Port
+* (TCP) Sequence number, Acknowledgment number
 
 Network Layer
-* Source IP, Destination IP 제공
+* Source IP, Destination IP
 
 * 패킷 길이, Source MAC address, Destination MAC address, EtherType, Header 길이, TTL
 
@@ -47,6 +47,10 @@ torrent 사용, ip 주소로 확인
 
 DNS
 --
+포트번호 53번
+Transaction_ID와 DomainName을 출력
+
+<img src="https://user-images.githubusercontent.com/37360089/70726269-2d669a00-1d41-11ea-8dbd-8ca9effb417e.png"></img>
 
 FTP
 --
