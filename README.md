@@ -3,16 +3,16 @@
 기본기능
 --
 Application Layer<br>  
-	*HTTP, DNS, P2P 각각을 구분하여 필터링 제공
+	* HTTP, DNS, P2P 각각을 구분하여 필터링 제공
 
 Transport Layer(TCP / UDP)<br>
-	*Source Port, Destination Port: 포트번호 제공<br>
-	*TCP : Sequence number, Acknowledgment number 제공
+	* Source Port, Destination Port: 포트번호 제공<br>
+	* TCP : Sequence number, Acknowledgment number 제공
 
 Network Layer<br>
-	*Source IP, Destination IP 제공
+	* Source IP, Destination IP 제공
 
-*패킷 길이, Source MAC address, Destination MAC address, EtherType, Header 길이, TTL
+* 패킷 길이, Source MAC address, Destination MAC address, EtherType, Header 길이, TTL
 
 기본기능 출력화면
 --
