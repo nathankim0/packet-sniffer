@@ -125,7 +125,10 @@ void print_packet_hex_data(u_char* data, int Size);
 
 /*전역변수*/
 u_int sel = 0;
+//IP 필터링용
 char str_[20] = { 0, };
+char ip_comp[20];
+char ip_comp2[20];
 
 /***************************************/
 /*                                     */
@@ -217,8 +220,6 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	CheckSummer* CS = (struct CheckSummer*)(data + 14); //체크섬을 저장 할 변수
 	domain* dns = (struct DNS*) (data + 42);
 	UDP_HDR* UDP = (struct UDP_HDR*)(data + IH->HeaderLength * 4 + sizeof(Ethernet_Header));
-
-	char ip_comp[20]; //ip 필터링용
 
 	/* 1. ICMP 2. TCP 3. UDP 4. HTTP 5. FTP 6. ALL */
 	switch (sel) {
@@ -384,8 +385,12 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 			printf("\nIP 입력 >> ");
 			scanf_s("%s", str_);
 			sprintf(ip_comp, "%d.%d.%d.%d", IH->SenderAddress.ip1, IH->SenderAddress.ip2, IH->SenderAddress.ip3, IH->SenderAddress.ip4);
+			sprintf(ip_comp2, "%d.%d.%d.%d", IH->DestinationAddress.ip1, IH->DestinationAddress.ip2, IH->DestinationAddress.ip3, IH->DestinationAddress.ip4);
 		}
-		if (strcmp(str_, ip_comp) == 0) {
+		printf("입력 IP: %s\n", str_);
+		printf("비교 IP: %s\n", ip_comp);
+
+		if (strcmp(str_, ip_comp) == 0 || strcmp(str_, ip_comp2) == 0) {
 			print_first(h, EH);
 			print_protocol(EH, type, IH, TCP, CS);
 			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
