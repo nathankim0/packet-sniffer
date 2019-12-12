@@ -78,7 +78,7 @@ FTP
 
 역할분담
 --
-<table border="1">
+<table>
 	<th>이름</th>
 	<th>내용</th>
 	<tr>
