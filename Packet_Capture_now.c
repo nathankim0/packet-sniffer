@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #define WIN32
 #pragma comment(lib, "wpcap.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -19,9 +20,9 @@ typedef struct Ethernet_Header//이더넷 헤더 구조체
 	u_char des[6];//수신자 MAC 주소
 	u_char src[6];//송신자 MAC 주소
 	short int ptype;//뒤에 나올 패킷의 프로토콜 종류(예:ARP/IP/RARP)
-		 //IP 헤더가 오는 경우 : 0x0800
-		 //ARP 헤더가 오는 경우 : 0x0806
-		 //RARP 헤더가 오는 경우 : 0x0835
+	   //IP 헤더가 오는 경우 : 0x0800
+	   //ARP 헤더가 오는 경우 : 0x0806
+	   //RARP 헤더가 오는 경우 : 0x0835
 }Ethernet_Header;//부를 이름 선언(별명)
 
 typedef struct ipaddress
@@ -76,6 +77,15 @@ typedef struct TCPHeader
 	unsigned short urgent_pointer;
 }TCPHeader;
 
+typedef struct udp_hdr
+
+{
+	unsigned short source_port; // Source port no.
+	unsigned short dest_port; // Dest. port no.
+	unsigned short udp_length; // Udp packet length
+	unsigned short udp_checksum; // Udp checksum (optional)
+
+} UDP_HDR;
 typedef struct CheckSummer
 {
 	//0    2byte       2byte   32
@@ -124,20 +134,29 @@ typedef struct CheckSummer
 
 // (추가) HTTPHeader
 typedef struct HTTPHeader
-
 {
 	uint16_t HTP[16];
 
 }HTTPHeader;
 
+typedef struct DNS
+{
+	u_char transaction_ID[2];
+	u_char domain_name[40];
 
+}domain;
 
 void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* data); //패킷을 무한 루프 상태에서 읽고 처리하는 함수
 void PrintHttpHeader(const uint8_t* packet); // Http헤더 출력 함수 (추가)
 void PrintHexAscii(const u_char* buffer, unsigned int Psize); // 아스키코드 변환 (추가)
 void print_first(const struct pcap_pkthdr* h, Ethernet_Header* EH);
 void print_protocol(Ethernet_Header* EH, short int type, IPHeader* IH, TCPHeader* TCP, CheckSummer* CS);
-u_int sel=0;
+
+/*
+전역변수
+*/
+u_int sel = 0;
+char str_[20] = { 0, };
 
 void main()
 {
@@ -148,9 +167,9 @@ void main()
 
 	pcap_t* pickedDev; //사용할 디바이스를 저장하는 변수
 
-				//1. 장치 검색 (찾아낸 디바이스를 LinkedList로 묶음)
+		   //1. 장치 검색 (찾아낸 디바이스를 LinkedList로 묶음)
 	if ((pcap_findalldevs(&allDevice, errorMSG)) == -1)//변수 생성시에는 1 포인터지만, pcap_findallDevice에 쓰는건 더블 포인트이므로 주소로 주어야 함.
-								  //pcap_if_t는 int형태를 반환하며, -1이 나올 경우, 디바이스를 찾지 못했을 경우이다.
+					  //pcap_if_t는 int형태를 반환하며, -1이 나올 경우, 디바이스를 찾지 못했을 경우이다.
 		printf("장치 검색 오류");
 
 	//2. 장치 출력
@@ -174,10 +193,10 @@ void main()
 
 	while (1) {
 		printf("<필터링>\n");
-		printf(" 1. ICMP\n 2. TCP\n 3. UDP\n 4. HTTP\n 5. FTP\n 6. ALL\n");
+		printf(" 1. ICMP\n 2. TCP\n 3. UDP\n 4. HTTP\n 5. FTP\n 6. DNS\n 7. ALL\n 8.IP로 검색\n");
 		printf(" >> ");
 		scanf_s("%d", &sel);
-		if (sel == 1 || sel == 2 || sel == 3 || sel == 4 || sel == 5 || sel == 6) {
+		if (sel == 1 || sel == 2 || sel == 3 || sel == 4 || sel == 5 || sel == 6 || sel == 7 || sel == 8) {
 			break;
 		}
 		else {
@@ -219,49 +238,36 @@ void PrintHttpHeader(const uint8_t* packet) {
 		//PrintHexAscii(hh->HTP[i], sizeof(uint8_t));
 	}
 	printf("\n");
-
 }
 
-void PrintHexAscii(const u_char* buffer, unsigned int Psize)
+void PrintData(u_char* data, int Size)
 {
-	int iCnt, iCnt2;
-
-	printf("addr   ");
-	for (iCnt2 = 0; iCnt2 < 16; ++iCnt2)
+	unsigned char a, line[17], c;
+	int j;
+	//loop over each character and print
+	for (int i = 0; i < Size; i++)
 	{
-		printf("%02X ", iCnt2);
-	}
-	printf("   ");
-	for (iCnt2 = 0; iCnt2 < 16; ++iCnt2)
-	{
-		printf("%X", iCnt2);
+		c = data[i];
+		//Print the hex value for every character , with a space
+		printf(" %.2x", (unsigned int)c);
+		//Add the character to data line
+		a = (c >= 32 && c <= 128) ? (unsigned char)c : '.';
+		line[i % 16] = a;
+		//if last character of a line , then print the line - 16 characters in 1 line
+		if ((i != 0 && (i + 1) % 16 == 0) || i == Size - 1)
+		{
+			line[i % 16 + 1] = '\0';
+			//print a big gap of 10 characters between hex and characters
+			printf("          ");
+			//Print additional spaces for last lines which might be less than 16 characters in length
+			for (j = strlen((const char*)line); j < 16; j++)
+			{
+				printf("   ");
+			}
+			printf("%s \n", line);
+		}
 	}
 	printf("\n");
-	printf("==========================================================================\n");
-	for (iCnt = 0; iCnt < Psize + (16 - (Psize % 16)); ++iCnt)
-	{
-		if (0 == (iCnt % 16))
-		{
-			printf("0x%02X0  ", iCnt / 16);
-		}
-		printf("%02X ", *(buffer + iCnt));
-		if (15 == iCnt % 16)
-		{
-			printf("   ");
-			for (iCnt2 = iCnt - 16; iCnt2 < iCnt; ++iCnt2)
-			{
-				if ((*(buffer + iCnt2) < 33) || (*(buffer + iCnt2) > 127))
-				{
-					printf(".");
-				}
-				else
-				{
-					printf("%c", *(buffer + iCnt2));
-				}
-			}
-			printf("\n");
-		}
-	}
 }
 
 //아래에서 사용할 수 있도록패킷 핸들러를 만든다.
@@ -282,14 +288,25 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 	IPHeader* IH = (struct IPHeader*)(data + 14); //제일 처음 14byte는 이더넷 헤더(Layer 2) 그 위에는 IP헤더(20byte), 그 위에는 TCP 헤더...
 	TCPHeader* TCP = (struct TCPHeader*)(data + 34); // TCP 헤더 
 	CheckSummer* CS = (struct CheckSummer*)(data + 14); //체크섬을 저장 할 변수
+	domain* dns = (struct DNS*) (data + 42);
+	UDP_HDR* UDP = (struct UDP_HDR*)(data + IH->HeaderLength * 4 + sizeof(Ethernet_Header));
+
+
+
+
+	char ip_comp[20];
+
+
 
 	//1. ICMP 2. TCP 3. UDP 4. HTTP 5. FTP 6. ALL
 	switch (sel) {
 	case 1:
 		if (IH->Protocol == IPPROTO_ICMP) {
+			printf("Internet Control Message               \n");
+
 			print_first(h, EH);
 			print_protocol(EH, type, IH, TCP, CS);
-			printf("Internet Control Message               \n");
+			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 		}
 		break;
 	case 2:
@@ -297,26 +314,71 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 			print_first(h, EH);
 			print_protocol(EH, type, IH, TCP, CS);
 
-			printf("TCP              \n");
-			// 추가
 			printf("┃  --------------------------------------------  \n");
 			printf("┃\t\t*[ TCP 헤더 ]*\t\t\n");
 			printf("┃\tSCR PORT : %d\n", ntohs(TCP->source_port));
 			printf("┃\tDEST PORT : %d\n", ntohs(TCP->dest_port));
 			printf("┃\tSeg : %u\n", ntohl(TCP->sequence));
 			printf("┃\tAck : %u\n", ntohl(TCP->acknowledge));
+			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 		}
 		break;
 	case 3:
 		if (IH->Protocol == IPPROTO_UDP) {
 			print_first(h, EH);
 			print_protocol(EH, type, IH, TCP, CS);
+
+			printf("┃  --------------------------------------------  \n");
+			printf("┃\t\t*[ UDP 헤더 ]*\t\t\n");
+			printf("┃\tSCR PORT : %d\n", ntohs(UDP->source_port));
+			printf("┃\tDEST PORT : %d\n", ntohs(UDP->dest_port));
+			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 		}
 		break;
 	case 4:
 		if (IH->Protocol == IPPROTO_TCP) {
-			print_protocol(EH, type, IH, TCP, CS);
+			if (ntohs(TCP->source_port) == 80 || ntohs(TCP->dest_port) == 80 || ntohs(TCP->source_port) == 443 || ntohs(TCP->dest_port) == 443) {
+				print_first(h, EH);
+				print_protocol(EH, type, IH, TCP, CS);
+
+				printf("┃  --------------------------------------------  \n");
+				printf("┃\t\t*[ TCP 헤더 ]*\t\t\n");
+				printf("┃\tSCR PORT : %d\n", ntohs(TCP->source_port));
+				printf("┃\tDEST PORT : %d\n", ntohs(TCP->dest_port));
+				printf("┃\tSeg : %u\n", ntohl(TCP->sequence));
+				printf("┃\tAck : %u\n", ntohl(TCP->acknowledge));
+
+				printf("┃\tHTTP 프로토콜 \n");
+				uint8_t* packet = data + 34 + (IH->HeaderLength) * 4;
+				printf("┃  ---------------HTTP Header-------------- \n");
+				printf("┃\t%s \n", packet);
+				printf("\n");
+				printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+			}
+		}
+		break;
+	case 5:
+		if (IH->Protocol == IPPROTO_TCP) {
+			if (ntohs(TCP->source_port) == 21 || ntohs(TCP->dest_port) == 21) {
+
+				print_first(h, EH);
+				print_protocol(EH, type, IH, TCP, CS);
+				printf("┃  --------------------------------------------  \n");
+				printf("┃\t\t*[ TCP 헤더 ]*\t\t\n");
+				printf("┃\tSCR PORT : %d\n", ntohs(TCP->source_port));
+				printf("┃\tDEST PORT : %d\n", ntohs(TCP->dest_port));
+				printf("┃\tSeg : %u\n", ntohl(TCP->sequence));
+				printf("┃\tAck : %u\n", ntohl(TCP->acknowledge));
+				printf("┃\tFTP 프로토콜 \n");
+				print_data(data + 34 + (IH->HeaderLength) * 4);
+				printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+			}
+		}
+		break;
+	case 6:
+		if (ntohs(TCP->source_port) == 53 || ntohs(TCP->dest_port) == 53) {
 			print_first(h, EH);
+			print_protocol(EH, type, IH, TCP, CS);
 
 			printf("┃  --------------------------------------------  \n");
 			printf("┃\t\t*[ TCP 헤더 ]*\t\t\n");
@@ -324,18 +386,33 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 			printf("┃\tDEST PORT : %d\n", ntohs(TCP->dest_port));
 			printf("┃\tSeg : %u\n", ntohl(TCP->sequence));
 			printf("┃\tAck : %u\n", ntohl(TCP->acknowledge));
+			printf("┃\tDNS 프로토콜 \n");
 
-			if (ntohs(TCP->source_port) == 80 || ntohs(TCP->dest_port) == 80) {
-				printf("┃\tHTTP 프로토콜 \n");
-				PrintHttpHeader(data + 34 + (IH->HeaderLength) * 4);
+			for (int i = 0; i < 40; i++) {
+				if (dns->domain_name[i] > 60)
+					printf("%c", dns->domain_name[i]);
+				else if (dns->domain_name[i - 1] > 60)
+					printf(".");
+				if ((dns->domain_name[i - 2] == 'o' || dns->domain_name[i - 2] == 'k') && (dns->domain_name[i - 1] == 'm' || dns->domain_name[i - 1] == 'r') && dns->domain_name[i] < 60)
+					break;
 			}
+			//printf("%s\n", dns->domain_name);
+			printf("\n");
+			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 		}
 		break;
-	case 5:
-		if (IH->Protocol == IPPROTO_TCP) {
-			print_protocol(EH, type, IH, TCP, CS);
-			print_first(h, EH);
+	case 7:
+		print_first(h, EH);
+		print_protocol(EH, type, IH, TCP, CS);
 
+		switch (IH->Protocol) {
+		case IPPROTO_ICMP:
+			printf("Internet Control Message               \n");
+		case IPPROTO_IGMP:
+			printf("Internet Group Management              \n");
+			break;
+		case IPPROTO_TCP:
+			printf("Transmission Control(TCP)              \n");
 			printf("┃  --------------------------------------------  \n");
 			printf("┃\t\t*[ TCP 헤더 ]*\t\t\n");
 			printf("┃\tSCR PORT : %d\n", ntohs(TCP->source_port));
@@ -347,14 +424,12 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 				printf("┃\tFTP 프로토콜 \n");
 				print_data(data + 34 + (IH->HeaderLength) * 4);
 			}
-		}
-		break;
-	case 6:
-		print_first(h, EH);
-		print_protocol(EH, type, IH, TCP, CS);
 
-		switch (IH->Protocol) {
-
+			if (ntohs(TCP->source_port) == 80 || ntohs(TCP->dest_port) == 80) {
+				printf("┃\tHTTP 프로토콜 \n");
+				PrintHttpHeader(data + 34 + (IH->HeaderLength) * 4);
+			}
+			break;
 		case IPPROTO_PUP:
 			printf("PUP                                    \n");
 			break;
@@ -373,14 +448,28 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* h, const u_char* da
 		default:
 			printf("Unknown                                \n");
 		}
+		printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+
+		break;
+	case 8:
+		if (str_[0] == 0) {
+			printf("\nIP 입력 >> ");
+			scanf_s("%s", str_);
+			sprintf(ip_comp, "%d.%d.%d.%d", IH->SenderAddress.ip1, IH->SenderAddress.ip2, IH->SenderAddress.ip3, IH->SenderAddress.ip4);
+		}
+		if (strcmp(str_, ip_comp) == 0) {
+			print_first(h, EH);
+			print_protocol(EH, type, IH, TCP, CS);
+			printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+		}
 		break;
 	default:
 		break;
 	}
-	printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
 }
 
 void print_protocol(Ethernet_Header* EH, short int type, IPHeader* IH, TCPHeader* TCP, CheckSummer* CS) {
+
 	printf("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 	printf("┃\t\t*[ Ethernet 헤더 ]*\t\t\n");
 	printf("┃\tSrc MAC : %02x-%02x-%02x-%02x-%02x-%02x\n", EH->src[0], EH->src[1], EH->src[2], EH->src[3], EH->src[4], EH->src[5]);//송신자 MAC
@@ -415,9 +504,15 @@ void print_protocol(Ethernet_Header* EH, short int type, IPHeader* IH, TCPHeader
 		//  printf("┃\t체크섬 : %04x\n", ntohs(IH->checksum));//예) 0x145F
 		printf("┃\t출발 IP 주소 : %d.%d.%d.%d\n", IH->SenderAddress.ip1, IH->SenderAddress.ip2, IH->SenderAddress.ip3, IH->SenderAddress.ip4);
 		printf("┃\t도착 IP 주소 : %d.%d.%d.%d\n", IH->DestinationAddress.ip1, IH->DestinationAddress.ip2, IH->DestinationAddress.ip3, IH->DestinationAddress.ip4);
-		//	printf("┃\t옵션/패딩 : %d\n", IH->Option_Padding);
+		//   printf("┃\t옵션/패딩 : %d\n", IH->Option_Padding);
+		printf("\n");
 
-		printf("┃\t세부 프로토콜 : "/*, IH->Protocol*/);
+		// printf("┃\t세부 프로토콜 : "/*, IH->Protocol*/);
+		
+		int iphdrlen = 0;
+		iphdrlen = IH->HeaderLength * 64;
+
+		PrintData((u_char*)IH, iphdrlen);
 	}
 	else if (type == ARPHEADER)
 	{

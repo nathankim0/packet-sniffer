@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="상현씨.c">
+    <ClCompile Include="Packet_Capture_now.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
