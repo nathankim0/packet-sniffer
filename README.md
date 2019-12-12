@@ -74,3 +74,53 @@ FTP
 
 <img src="https://user-images.githubusercontent.com/37360089/70725896-897cee80-1d40-11ea-9eaa-f1c662eb1d13.png"></img>
 </div>
+
+
+역할분담
+--
+<table border="1">
+	<th>이름</th>
+	<th>내용</th>
+	<tr>
+	    <td>김진엽</td>
+	    <td>설계발표, 기본기능 구현, 필터링 기능 구현</td>
+	</tr>
+	<tr>
+	    <td>박현욱</td>
+	    <td>기본기능 구현, DNS기능 구현, 구현결과 발표</td>
+	</tr>
+	<tr>
+	    <td>양소영</td>
+	    <td>기본기능 구현,  P2P기능 구현, 발표자료 준비</td>
+	</tr>
+	<tr>
+	    <td>이상현</td>
+	    <td>설계 자료준비, 기본기능 구현, FTP기능 구현</td>
+	</tr>
+	<tr>
+	    <td>손지용</td>
+	    <td>자료조사 ,기본기능 구현, HTTP 필터링 구현</td>
+	</tr>
+	</table>
+	
+	
+	
+참고자료
+--
+https://wowcat.tistory.com/161
+https://www.winpcap.org/docs/docs_412/html/main.html
+https://www.binarytides.com/code-packet-sniffer-c-winpcap/
+https://toughrogrammer.tistory.com/165
+FTP 참고자료: 
+https://friedpotatospace.tistory.com/7
+Winpcap 참고자료: 
+https://kaspyx.tistory.com/10, https://kaspyx.tistory.com/14
+WireShark 참고자료: 
+https://ko.wikipedia.org/wiki/%EC%99%80%EC%9D%B4%EC%96%B4%EC%83%A4%ED%81%AC
+https://kaspyx.tistory.com/14?category=833244
+패킷분석 참고자료:
+https://kaspyx.tistory.com/14?category=833244
+p2p 참고자료: 
+https://mingrammer.com/building-blockchain-in-go-part-7/
+포트번호: 
+https://www.dsun.kr/77
